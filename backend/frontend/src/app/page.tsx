@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Upload, Activity, Database, CheckCircle, AlertCircle } from 'lucide-react';
 import { checkHealth, uploadDataset } from '../../services/api';
-import { startTraining, getTrainingStatus } from '../../services/api'; // Or relative path if that's what worked for you
+import { startTraining, getTrainingStatus, generateSyntheticData } from '../../services/api'; // Or relative path if that's what worked for you
 
 
 export default function Home() {
@@ -14,6 +14,7 @@ export default function Home() {
   const [training, setTraining] = useState(false);
 const [progress, setProgress] = useState(0);
 const [trainMessage, setTrainMessage] = useState('');
+const [generatedData, setGeneratedData] = useState<any[]>([]);
 
 
 
@@ -42,6 +43,17 @@ const handleStartTrain = async () => {
     }
 };
 
+
+
+const handleGenerate = async () => {
+    if (!uploadResult) return;
+    try {
+        const result = await generateSyntheticData(uploadResult.filename);
+        setGeneratedData(result.data); // Save the table data
+    } catch (error) {
+        alert("Generation failed");
+    }
+};
 
   // Check backend health on load
   useEffect(() => {
@@ -192,6 +204,46 @@ const handleStartTrain = async () => {
     </div>
   )}
 </div>
+{/* Generation Card */}
+{progress === 100 && (
+  <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 md:col-span-2">
+    <div className="flex items-center justify-between mb-4">
+      <h2 className="text-xl font-semibold text-green-700">🚀 Ready to Generate!</h2>
+      <button 
+        onClick={handleGenerate}
+        className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+      >
+        Generate Synthetic Data
+      </button>
+    </div>
+
+    {generatedData.length > 0 && (
+      <div className="overflow-x-auto mt-4 border rounded-lg">
+        <table className="w-full text-sm text-left text-slate-500">
+            <thead className="text-xs text-slate-700 uppercase bg-slate-50">
+                <tr>
+                    {Object.keys(generatedData[0]).map((key) => (
+                        <th key={key} className="px-6 py-3">{key}</th>
+                    ))}
+                </tr>
+            </thead>
+            <tbody>
+                {generatedData.map((row, i) => (
+                    <tr key={i} className="bg-white border-b hover:bg-slate-50">
+                        {Object.values(row).map((val: any, j) => (
+                            <td key={j} className="px-6 py-4">
+                                {typeof val === 'number' ? val.toFixed(2) : val}
+                            </td>
+                        ))}
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+)}
+
 
       </div>
       

@@ -59,5 +59,17 @@ export const getTrainingStatus = async () => {
     return null;
   }
 };
+// Add this at the bottom
+export const generateSyntheticData = async (filename: string, count: number = 50) => {
+  try {
+    const response = await api.post(`/generate?filename=${filename}&num_samples=${count}`);
+    return response.data;
+  } catch (error) {
+    console.error('Generation failed:', error);
+    throw error;
+  }
+};
+
+
 
 export default api;
